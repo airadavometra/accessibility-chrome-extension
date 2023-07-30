@@ -10,8 +10,6 @@ async function toggleBlurredVisionOnPage() {
       if (filterElement) {
         filterElement.remove();
       } else {
-        const body = document.getElementsByTagName("body")[0];
-
         const newFilterElement = document.createElement("div");
 
         newFilterElement.id = filterElementId;
@@ -26,7 +24,7 @@ async function toggleBlurredVisionOnPage() {
 
         newFilterElement.ariaHidden = "true";
 
-        body.appendChild(newFilterElement);
+        document.body.appendChild(newFilterElement);
       }
     },
   });
@@ -42,8 +40,6 @@ async function toggleTremorOnPage() {
       if (filterElement) {
         filterElement.remove();
       } else {
-        const body = document.getElementsByTagName("body")[0];
-
         const newFilterElement = document.createElement("div");
 
         newFilterElement.id = "blindness-filter";
@@ -57,7 +53,7 @@ async function toggleTremorOnPage() {
 
         newFilterElement.ariaHidden = "true";
 
-        body.appendChild(newFilterElement);
+        document.body.appendChild(newFilterElement);
       }
     },
   });
@@ -68,16 +64,16 @@ async function toggleBlindnessOnPage() {
   chrome.scripting.executeScript({
     target: { tabId: tab.id },
     function: () => {
-      const filterElement = document.getElementById("blindness-filter");
+      const filterElementId = "blindness-filter";
+
+      const filterElement = document.getElementById(filterElementId);
 
       if (filterElement) {
         filterElement.remove();
       } else {
-        const body = document.getElementsByTagName("body")[0];
-
         const newFilterElement = document.createElement("div");
 
-        newFilterElement.id = "blindness-filter";
+        newFilterElement.id = filterElementId;
 
         newFilterElement.style.position = "fixed";
         newFilterElement.style.inset = "0";
@@ -88,11 +84,12 @@ async function toggleBlindnessOnPage() {
 
         newFilterElement.ariaHidden = "true";
 
-        body.appendChild(newFilterElement);
+        document.body.appendChild(newFilterElement);
       }
     },
   });
 }
+
 async function toggleDyslexiaOnPage() {
   let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
@@ -209,27 +206,62 @@ async function toggleColorBlindnessOnPage() {
   chrome.scripting.executeScript({
     target: { tabId: tab.id },
     function: () => {
-      const filterElement = document.getElementById("blindness-filter");
+      const filterElementId = "color-blindness-filter";
+
+      const filterElement = document.getElementById(filterElementId);
 
       if (filterElement) {
         filterElement.remove();
+        document.body.style.filter = "unset";
       } else {
-        const body = document.getElementsByTagName("body")[0];
-
-        const newFilterElement = document.createElement("div");
-
-        newFilterElement.id = "blindness-filter";
-
-        newFilterElement.style.position = "fixed";
-        newFilterElement.style.inset = "0";
-        newFilterElement.style.pointerEvents = "none";
-        newFilterElement.style.backgroundColor = "#80808090";
-        newFilterElement.style.backdropFilter = "blur(30px)";
-        newFilterElement.style.zIndex = "1000000";
-
-        newFilterElement.ariaHidden = "true";
-
-        body.appendChild(newFilterElement);
+        const svgMarkup = `<svg id=${filterElementId} style="width: 0; height: 0; position: absolute">
+              <defs>
+                <filter id="protanopia">
+                  <feColorMatrix
+                    in="SourceGraphic"
+                    type="matrix"
+                    values="0.567, 0.433, 0,     0, 0
+                0.558, 0.442, 0,     0, 0
+                0,     0.242, 0.758, 0, 0
+                0,     0,     0,     1, 0"
+                  />
+                </filter>
+                <filter id="deuteranopia">
+                  <feColorMatrix
+                    in="SourceGraphic"
+                    type="matrix"
+                    values="0.625, 0.375, 0,   0, 0
+                0.7,   0.3,   0,   0, 0
+                0,     0.3,   0.7, 0, 0
+                0,     0,     0,   1, 0"
+                  />
+                </filter>
+                <filter id="tritanopia">
+                  <feColorMatrix
+                    in="SourceGraphic"
+                    type="matrix"
+                    values="0.95, 0.05,  0,     0, 0
+                0,    0.433, 0.567, 0, 0
+                0,    0.475, 0.525, 0, 0
+                0,    0,     0,     1, 0"
+                  />
+                </filter>
+                <filter id="achromatopsia">
+                  <feColorMatrix
+                    in="SourceGraphic"
+                    type="matrix"
+                    values="0.299, 0.587, 0.114, 0, 0
+                0.299, 0.587, 0.114, 0, 0
+                0.299, 0.587, 0.114, 0, 0
+                0,     0,     0,     1, 0"
+                  />
+                </filter>
+              </defs>
+            </svg>
+      `;
+        document.body.insertAdjacentHTML("beforeend", svgMarkup);
+        // TODO: turn on different modes
+        document.body.style.filter = "url(#protanopia)";
       }
     },
   });
